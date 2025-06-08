@@ -10,6 +10,8 @@ This documentation has been composed from my own notes. After many hours of tria
 
 You can find the entrypoint for the original GitHub documentation for self-hosted runners [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners "About self-hosted runners - GitHub Docs").
 
+The official Quickstart for Actions Runner Controller is located behind [this link](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/quickstart-for-actions-runner-controller "Quickstart for Actions Runner Controller - GitHub Docs")
+
 ### Editor's note
 
 _This documentation is written for absolutely noobs and dummies like myself. I've tried to write it so that anyone can understand it and follow the steps, even without any previous experience with Kubernetes or GitHub Actions. If you've got any additional questions or feedback, please feel free to send me message or open an issue/PR._
@@ -90,7 +92,7 @@ Open the file (for example, with `nano values.yml`) and add the content found in
 
 Set the minimum and maximum number of runners to some reasonable values. Low-end machines might not be able to handle more than a couple of runners. The computational strain of a single runner largely depends on the workflows you run on it.
 
-If you want, you can set maximum hardware resource limits for the runners. This is optional and not required. The complete original `values.yml` file provided by GitHub can be found [here](https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml "actions-runner-controller/charts/gha-runner-scale-set/values.yaml at master · actions/actions-runner-controller").
+If you want, you can set maximum hardware resource limits for the runners, along with many other configurations. This is optional and not required. The complete original `values.yml` file provided by GitHub can be found [here](https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml "actions-runner-controller/charts/gha-runner-scale-set/values.yaml at master · actions/actions-runner-controller").
 
 Update the `runnerImage` (present in two different places). If you are using a custom runner image, update the image name and tag. If you are using the default runner image, you can comment it out.
 
