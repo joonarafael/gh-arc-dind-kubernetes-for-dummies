@@ -1,0 +1,56 @@
+## maxRunners is the max number of runners the auto scaling runner set will scale up to.
+maxRunners: 5
+
+## minRunners is the min number of runners the auto scaling runner set will scale down to.
+minRunners: 0
+
+# runnerGroup: "default"
+
+template:
+  spec:
+    initContainers:
+      - name: init-dind-externals
+        image: docker.io/user/runner-image:vX
+        imagePullPolicy: IfNotPresent
+        command:
+          ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        volumeMounts:
+          - name: dind-externals
+            mountPath: /home/runner/tmpDir
+    containers:
+      - name: runner
+        image: docker.io/user/runner-image:vX
+        imagePullPolicy: IfNotPresent
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: DOCKER_HOST
+            value: tcp://localhost:2376
+          - name: DOCKER_TLS_VERIFY
+            value: "1"
+          - name: DOCKER_CERT_PATH
+            value: /certs/client
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-cert
+            mountPath: /certs/client
+            readOnly: true
+      - name: dind
+        image: docker.io/docker:dind
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-cert
+            mountPath: /certs/client
+          - name: dind-externals
+            mountPath: /home/runner/externals
+    volumes:
+      - name: work
+        emptyDir: {}
+      - name: dind-cert
+        emptyDir: {}
+      - name: dind-externals
+        emptyDir: {}
