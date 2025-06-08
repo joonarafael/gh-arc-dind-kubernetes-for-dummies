@@ -94,6 +94,8 @@ Set the minimum and maximum number of runners to some reasonable values. Low-end
 
 If you want, you can set maximum hardware resource limits for the runners, along with many other configurations. This is optional and not required. The complete original `values.yml` file provided by GitHub can be found [here](https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml "actions-runner-controller/charts/gha-runner-scale-set/values.yaml at master · actions/actions-runner-controller").
 
+Please note that DinD mode will override some of the configurations. In general, do not tamper with the configuration if you are not sure what you are doing.
+
 Update the `runnerImage` (present in two different places). If you are using a custom runner image, update the image name and tag. If you are using the default runner image, you can comment it out.
 
 ### Custom Runner Images
