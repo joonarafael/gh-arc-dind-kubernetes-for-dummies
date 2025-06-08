@@ -1,8 +1,10 @@
 # GitHub Actions Runner Controller for Kubernetes
 
+Updated 2025-06-08.
+
 **Self-hosted runners for GitHub Actions**. Run all your workflows on your own infrastructure.
 
-Configured to run on an automatically scaled set of runners, run as a Kubernetes controller. Setup to use Docker in Docker (DinD) to run the runners. Documentation includes the additional steps to use your custom runner image as the base image for the runners.
+Configured to run on an automatically scaled set of runners, run as a Kubernetes controller. Setup to use Docker in Docker (DinD) to run the runners. Documentation includes the additional steps to use your custom runner image as the base image for the runners, which is most likely required as the default image for self-hosted ARC systems **does not include everything within** `ubuntu-latest` image available for GitHub-hosted runners.
 
 This documentation has been composed from my own notes. After many hours of trial and error, I've finally got it working and decided to write the notes down.
 
@@ -10,33 +12,37 @@ You can find the entrypoint for the original GitHub documentation for self-hoste
 
 ### Editor's note
 
-This documentation is written for absolutely noobs and dummies like myself. I've tried to write it so that anyone can understand it and follow the steps, even without any previous experience with Kubernetes or GitHub Actions. If you've got any additional questions or feedback, please feel free to send me message or open an issue/PR.
+_This documentation is written for absolutely noobs and dummies like myself. I've tried to write it so that anyone can understand it and follow the steps, even without any previous experience with Kubernetes or GitHub Actions. If you've got any additional questions or feedback, please feel free to send me message or open an issue/PR._
 
-Also, many of these steps can be done in a different way. Maybe some steps can be skipped. Or maybe some tools or services can be used in a different way or replaced with something else. But the goal is to just get it working. So remember that this is just a guide and not a strict set of instructions. Also the implementation might not be the best possible or most optimized way to do it.
+_However, please keep in mind that many of these steps can be done in a different way. Maybe some steps can be skipped. Or maybe some tools or services can be used in a different way or replaced with something else. But the goal is to just get it working. So remember that this is just a guide and not a strict set of instructions. Also the implementation might not be the best possible or most optimized way to do it._
 
-If you have any strict security requirements, or any other specific needs, please make sure to review the documentation and any related code before using it.
+_If you have any strict security requirements, or any other specific needs, please make sure to review the documentation and any related code before using it._
 
 ## 00 Motivation, Considerations & Goal
 
-The goal of this project is to provide a self-hosted runner set to execute the GitHub Actions workflows for one of your own repositories. The complete runner set is configured to run on your own infrastructure.
+The goal of this project is to provide a self-hosted runner set to run all your GitHub Actions workflows for one of your own repositories. The complete runner set is configured to run on your own infrastructure.
 
-The runner set is configured to run on an automatically scaled set of runners, run as a Kubernetes controller. Setup to use Docker in Docker (DinD) to run the runners and enable users to use any Docker features within their workflows.
+The runner set is configured to run on an automatically scaled set of runners, powered by a Kubernetes controller. It will be configured to use Docker in Docker (DinD) to **enable users to use any Docker features within their workflows**.
 
-This was my goal from the get-go, but I just could not find any comprehensive documentation on how to do this. So I read the GitHub Actions documentation, issues, various forums, articles, and blog posts. And a lot of trial and error. But finally, I've got it working and decided to write the notes down.
+This was my goal from the get-go, but I just could not find any comprehensive documentation on how to do this. So I read the GitHub Actions documentation, issues, various forums, articles, and blog posts. And a lot of trial and error. But finally, I've got it working and decided to write the notes down. A really valuable resource has also been [this great blog post](https://some-natalie.dev/blog/kubernoodles-pt-5/ "Creating custom images for actions-runner-controller | Some Natalie's corner of the internet") by [@some-natalie](https://github.com/some-natalie "some-natalie (Natalie Somersall)").
 
 ## 01 Prerequisites
 
-Hardware to run on. I've run it on a separate physical server machine running [Proxmox](https://www.proxmox.com/en/ "Proxmox - Powerful open source server solutions"). I've got 8 cores, 16GB of RAM and 256GB of storage. If needed, add more RAM with swap as needed.
+Start by identifying and choosing the hardware to run on. I've run it on a separate physical server machine running [Proxmox](https://www.proxmox.com/en/ "Proxmox - Powerful open source server solutions"). I've got 8 cores, 16GB of RAM and 256GB of storage. When needed, I added more RAM with swap. I think the listed hardware is kind of an low-endish setup. Less cores or less RAM might just not be enough.
 
 I initialized a new VM on the Proxmox and installed [Ubuntu Server 24.04 LTS](https://ubuntu.com/download/server "Get Ubuntu Server | Download | Ubuntu") on it. Proxmox is a great way to run multiple virtual machines on a single physical machine. Of course, it is not a prerequisite, but it's a great way to run the runner set on a separate, completely isolated VM, in a dedicated environment reserved just for the ARC set.
 
-Update any packages to the latest version. Install `openssh` to access the VM via SSH. Configure SSH via `/etc/ssh/sshd_config`. Read complete documentation of `openssh` behind [this link](https://documentation.ubuntu.com/server/how-to/security/openssh-server/index.html "OpenSSH server - Ubuntu Server documentation").
+The runner set can be run on any machine, of course, but it's recommended to run it on a separate, dedicated VM. This ensures that there are no conflicting installations or other mismatching dependencies or environment issues.
+
+Now I assume you've got the Debian system ready, whichever solution you've chosen.
+
+Update any packages to the latest version. I recommend to install `openssh` to access the system via SSH. Configure SSH via `/etc/ssh/sshd_config`. Read complete documentation of `openssh` behind [this link](https://documentation.ubuntu.com/server/how-to/security/openssh-server/index.html "OpenSSH server - Ubuntu Server documentation").
 
 ## 02 Install Docker
 
-Install Docker. Read the [Docker documentation](https://docs.docker.com/engine/install/ubuntu/ "Ubuntu | Docker Docs") for the latest instructions. Make sure to install the `docker-compose` plugin and all the other plugins you might need.
+Install Docker. Read the [Docker documentation](https://docs.docker.com/engine/install/ubuntu/ "Ubuntu | Docker Docs") for the latest instructions. Note that it's enough to have the Docker Engine installed here, on the host. For example, in my understanding, the `docker-compose` plugin is not needed for the host if it's installed on the runner image. The runner image will only need the Docker Engine and access to the Docker socket.
 
-After the installation, there's a good chance that you need to update the Docker permissions. Usually the commands you need to execute are the following:
+After the Docker installation, there's a good chance that you need to update the Docker permissions. Usually the commands you need to execute are the following:
 
 ```bash
 sudo groupadd docker
@@ -45,7 +51,7 @@ sudo usermod -aG docker ${USER}
 
 ## 03 Install Go
 
-Install the Go programming language. Read [GO documentation](https://go.dev/doc/install "Download and install - The Go Programming Language") for the latest instructions.
+Install the Go programming language. Read [Go documentation](https://go.dev/doc/install "Download and install - The Go Programming Language") for the latest instructions.
 
 On a headless system, files and folders can be fetched from the internet, for example, via `curl`. Here you want to use `curl -L -O <url>`.
 
@@ -56,7 +62,7 @@ export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
-## 04 Install Kubectl
+## 04 Install kubectl
 
 Install `kubectl`. Read the [Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/ "Install and Set Up kubectl on Linux | Kubernetes") for the latest instructions.
 
@@ -70,27 +76,40 @@ Install the Helm CLI from script. Read the [Helm documentation](https://helm.sh/
 
 ## 07 Initialize Kind Cluster
 
-Initialize the default kind cluster with `kind create cluster`. You can also create a custom cluster with `kind create cluster --name <cluster-name>` or configure it further if you want, but please note that the default configuration is sufficient for this project. Also the remaining steps in this documentation are based on the default cluster.
+Spawn the default kind cluster with `kind create cluster`. You may also create a custom cluster, of course, with `kind create cluster --name <cluster-name>` or configure it further if you want, but please note that the default configuration is sufficient for this project. Also the remaining steps in this documentation are based on the default cluster.
 
 Initializing the cluster might take a while, so give it some time.
 
 ## 08 Configurations
 
-Create a new file called `values.yml` with `touch values.yml`. I've placed the file in the home directory of the user, but you can place it anywhere you want. However, the remaining commands in this documentation have to be executed from the same directory as the `values.yml` file. This file contains the configurations for the runner set.
+Create a new file called `values.yml` with `touch values.yml`. I've placed the file in the home directory of the user, but you can place it anywhere you want. **However**, the remaining commands in this documentation have to be executed from the same directory as the `values.yml` file. This file contains the configurations for the runner set.
 
 Open the file (for example, with `nano values.yml`) and add the content found in the [adjacent example file](./values.yml "values.yml").
 
-### Edit the `values.yml` file to your liking and at least update the `runnerImage`!
+### Configure the `values.yml` file
 
-Set the minimum and maximum number of runners to some reasonable values. Low-end machines might not be able to handle more than a couple of runners. The computational strain of a single runner depends on the workflows you run on it.
+Set the minimum and maximum number of runners to some reasonable values. Low-end machines might not be able to handle more than a couple of runners. The computational strain of a single runner largely depends on the workflows you run on it.
+
+If you want, you can set maximum hardware resource limits for the runners. This is optional and not required. The complete original `values.yml` file provided by GitHub can be found [here](https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml "actions-runner-controller/charts/gha-runner-scale-set/values.yaml at master · actions/actions-runner-controller").
 
 Update the `runnerImage` (present in two different places). If you are using a custom runner image, update the image name and tag. If you are using the default runner image, you can comment it out.
 
-My custom runner image is called `jobba-custom`. So for me, the line would be `docker.io/poser/jobba-custom:VX` where `VX` is the tag of the image. You can use it if you want, it's a simple base image that can handle all Docker features out-of-the-box and has Python, Node, Go, and awscli installed. You can check the image [here](https://hub.docker.com/repository/docker/poser/jobba-custom/general "poser/jobba-custom | Docker Hub").
+### Custom Runner Images
 
-This "runner image" is referring to the base image that the runners will use to run the workflows. So whatever is present in the image will be available to you in the workflows. If you are planning to execute workflows that require specific tools or libraries, you might need to use a custom runner image and preinstall those tools or libraries.
+To run your workflows on a custom runner image, you need to first create the custom image. The default documentation about this topic by GitHub can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
-For example, the default `ubuntu-latest` image available for GitHub-hosted runners includes various tools you might expect to be available. **However, the default self-hosted image does not include everything within** `ubuntu-latest`. So it's highly likely that you need to create a custom runner image. One other option is to start installing the tools you need within the workflows, but of course, this is not the most optimal solution.
+I created a custom image called `jobba-custom`. The source Dockerfile used to build the image can be found [here](./image/Dockerfile "Dockerfile"). The prebuilt image ready for download is available [here](https://hub.docker.com/repository/docker/poser/jobba-custom/general "poser/jobba-custom | Docker Hub"). If that's sufficient for your needs, you can freely use it out-of-the-box. Otherwise, you can create your own custom image and use my Dockerfile as a reference.
+
+The official starter Dockerfile for a custom runner image can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs"). It's wise to preinstall the tools you need in your workflows into the custom runner image.
+
+Build and push the image to Docker Hub. I've written more about this step in the [image/README.md](./image/README.md "image/README.md") file. Perform this step before continuing with the rest of the documentation.
+
+With my custom runner image now pushed to Docker Hub, the line in the `values.yml` file would be `docker.io/poser/jobba-custom:VX` where `VX` is the tag of the
+image.
+
+You don't have to opt for a custom image, as you can use the default one. If you do not specify the `runnerImage`, the runner set will use the default one. **Please note**, that the default image for self-hosted ARC systems **is not the same as** `ubuntu-latest` image available for GitHub-hosted runners. **The default self-hosted image does not include everything within** `ubuntu-latest`.
+
+So it's highly likely that you need to create a custom runner image. One option is always to start installing the tools you need **within the workflows**, but of course, this is not the most optimal solution.
 
 ## 09 Initialize the ARC System
 
@@ -113,7 +132,7 @@ helm install arc \
 
 From your GitHub account, go to _Settings_ -> _Developer settings_ -> _Personal access tokens_ and create a new private access token, or PAT.
 
-Add at least the following scopes:
+Add the following scopes:
 
 - `admin:gpg_key`
 - `read:packages`
@@ -144,7 +163,7 @@ helm install "${INSTALLATION_NAME}" \
     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
 ```
 
-**NOTE**! The `INSTALLATION_NAME` is the name of the runner set. You can use any name you want, but it's a good idea to use a name that is easy to remember and identify. This is the name you will have to use in the workflow files to actually get the runners to run the workflows.
+**NOTE**! The `INSTALLATION_NAME` is the name of the runner set. You can use any name you want, but it's a good idea to use a name that is easy to remember and identify. **This is the name you will have to use in the workflow files** to actually get the runners to run the workflows.
 
 **NOTE**! Make sure to update the `VERSION` variable to the latest version of the runner set or use the specific version you want to use.
 
@@ -154,15 +173,34 @@ helm install "${INSTALLATION_NAME}" \
 
 ## 12 Verify the Runners
 
-To verify that the runners are running, run the following command:
+To check the status of the runner set, run the following command:
 
 ```bash
 helm list -A
+```
+
+You should see the following output:
+
+```bash
+NAME                 NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                                       APP VERSION
+arc                  arc-systems     1               2025-06-08 11:45:59.152090536 +0000 UTC deployed        gha-runner-scale-set-controller-0.4.0       0.4.0
+self-hosted-runners  arc-runners     1               2025-06-08 11:46:13.451041354 +0000 UTC deployed        gha-runner-scale-set-0.4.0                  0.4.0
+```
+
+To check the status of the pods, run the following command:
+
+```bash
 kubectl get pods -n arc-systems
 kubectl get pods -n arc-runners
 ```
 
-_TODO: Add example output._
+You should see the following output:
+
+```bash
+NAME                                                   READY   STATUS    RESTARTS   AGE
+arc-gha-runner-scale-set-controller-594cdc976f-m7cjs   1/1     Running   0          64s
+arc-runner-set-754b578d-listener                       1/1     Running   0          12s
+```
 
 No pods should be restarting. However, it might take a while for the runners to be ready. So after the initial deployment, you might need to wait for a few minutes before the runners are ready. If they are restarting or exiting after 5 minutes, you might need to check the logs for the pods.
 
@@ -170,11 +208,13 @@ One common problem can be that you have named the runner set with a conflicting 
 
 ## 13 Logs & Troubleshooting
 
-_TODO: Add logs and troubleshooting._
+If you encounter some issues here, you can always check the logs for the pods. First identify the names of the relevant pods ...
+
+_TODO: Add some docs for logs and troubleshooting._
 
 ## XX Nuclear Bomb
 
-If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything from all namespaces. Please be careful with this command as you will lose everything on your machine.
+If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything Kubernetes-related from all namespaces. Please be careful with this command as you will lose everything on your machine.
 
 ```bash
 helm ls -a --all-namespaces | awk 'NR > 1 { print  "-n "$2, $1}' | xargs -L1 helm delete &&
