@@ -32,7 +32,13 @@ Make sure to update the following versions in the Dockerfile:
 
 ### Environment variables
 
-Any required environment variables can be imported with the `images/.env` file into the Dockerfile. **NOTE**! If you fork this repository, make sure to ignore the `.env` file not to ever commit any secrets to version control.
+Any required environment variables can be imported with the `images/.env` file into the Dockerfile.
+
+**NOTE**! If you fork this repository, make sure to ignore the `.env` file not to ever commit any secrets to version control.
+
+### Runner-specific stuff
+
+The required runner-specific stuff is installed within the Dockerfile, including the actual runner and the container hooks.
 
 ### Helper scripts
 

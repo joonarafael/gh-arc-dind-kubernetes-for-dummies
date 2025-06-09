@@ -10,7 +10,7 @@ This documentation has been composed from my own notes. After many hours of tria
 
 You can find the entrypoint for the original GitHub documentation for self-hosted runners [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners "About self-hosted runners - GitHub Docs").
 
-The official Quickstart for Actions Runner Controller is located behind [this link](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/quickstart-for-actions-runner-controller "Quickstart for Actions Runner Controller - GitHub Docs")
+The official Quickstart for Actions Runner Controller is located behind [this link](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/quickstart-for-actions-runner-controller "Quickstart for Actions Runner Controller - GitHub Docs").
 
 ### Editor's note
 
@@ -42,7 +42,7 @@ Update any packages to the latest version. I recommend to install `openssh` to a
 
 ## 02 Install Docker
 
-Install Docker. Read the [Docker documentation](https://docs.docker.com/engine/install/ubuntu/ "Ubuntu | Docker Docs") for the latest instructions. Note that it's enough to have the Docker Engine installed here, on the host. For example, in my understanding, the `docker-compose` plugin is not needed for the host if it's installed on the runner image. The runner image will only need the Docker Engine and access to the Docker socket.
+Install Docker. Read the [Docker documentation](https://docs.docker.com/engine/install/ubuntu/ "Ubuntu | Docker Docs") for the latest instructions. Note that it's enough to have the Docker Engine installed here, on the host. For example, in my understanding, the `docker-compose` plugin is not needed for the host if it's installed on the runner image. The runner image will only need the **access** to the Docker Engine and **access** to the Docker socket (in DinD mode).
 
 After the Docker installation, there's a good chance that you need to update the Docker permissions. Usually the commands you need to execute are the following:
 
@@ -74,7 +74,7 @@ Install `kind`. Make sure to install `kind` with `go install` method as instruct
 
 ## 06 Install Helm
 
-Install the Helm CLI from script. Read the [Helm documentation](https://helm.sh/docs/intro/install/#from-script "Install Helm | Helm") and follow the instructions on "script installation".
+Install `helm` from script. Read the [Helm documentation](https://helm.sh/docs/intro/install/#from-script "Install Helm | Helm") and follow the instructions on "script installation".
 
 ## 07 Initialize Kind Cluster
 
