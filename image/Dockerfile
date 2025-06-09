@@ -38,78 +38,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # BASE SOFTWARE & JOBBA CI/CD DEPENDENCIES
 #
 
-# Install base software
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-  apt-transport-https \
-  apt-utils \
-  ca-certificates \
-  curl \
-  docker-buildx \
-  file \
-  gcc \
-  git \
-  gunicorn \
-  iproute2 \
-  iptables \
-  jq \
-  libasound2 \
-  libgbm-dev \
-  libgconf-2-4 \
-  libgtk-3-0 \
-  libgtk2.0-0 \
-  libnotify-dev \
-  libnss3 \
-  libnss3-tools \
-  libxss1 \
-  libxtst6 \
-  libyaml-dev \
-  locales \
-  lsb-release \
-  openssl \
-  pigz \
-  pkg-config \
-  psmisc \
-  python3 \
-  python3-pip \
-  python3-venv \
-  qemu-system \
-  software-properties-common \
-  sudo \
-  tidy \
-  time \
-  tzdata \
-  uidmap \
-  unzip \
-  wget \
-  xauth \
-  xvfb \
-  xz-utils \
-  zip
-
-# Install Go
-RUN curl -L "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o /tmp/go.tar.gz \
-  && tar -C /usr/local -xzf /tmp/go.tar.gz \
-  && rm /tmp/go.tar.gz \
-  && ln -s /usr/local/go/bin/go /usr/local/bin/go \
-  && ln -s /usr/local/go/bin/gofmt /usr/local/bin/gofmt
-
-ENV GOPATH=/go
-ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
-RUN go version
-
-# Install Node & Yarn
-RUN curl -sL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" -o /tmp/nodesource_setup.sh \
-  && chmod u+x /tmp/nodesource_setup.sh \
-  && bash /tmp/nodesource_setup.sh \
-  && apt-get install nodejs -y --no-install-recommends \
-  && npm install --global yarn
-RUN node -v && npm -v && yarn --version
-
-# Ensure `python3` is the default `python`
-RUN ln -sf /usr/bin/python3 /usr/bin/python \
-  && ln -sf /usr/bin/pip3 /usr/bin/pip
-RUN python --version && pip --version
+# Install base software & libraries
+COPY images/software/base-software.sh /base-libs.sh
+RUN bash /base-libs.sh && rm /base-libs.sh
 
 #
 # RUNNER SPECIFIC
@@ -146,9 +77,17 @@ RUN bash /helm.sh && rm /helm.sh
 # OTHER OPTIONAL SOFTWARE
 #
 
+# Install Go
+COPY images/software/get-go.sh /go.sh
+RUN bash /go.sh "${GO_VERSION}" && rm /go.sh
+
 # Install Caddy
 COPY images/software/get-caddy.sh /caddy.sh
 RUN bash /caddy.sh && rm /caddy.sh
+
+# Install Node & Yarn
+COPY images/software/get-node-yarn.sh /node-yarn.sh
+RUN bash /node-yarn.sh "${NODE_VERSION}" && rm /node-yarn.sh
 
 # Install AWS CLI
 COPY images/software/get-awscli.sh /awscli.sh
@@ -156,6 +95,16 @@ RUN ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) \
   && if [ "$ARCH" = "arm64" ]; then export AWSCLI_ARCH=aarch64 ; else export AWSCLI_ARCH=x86_64 ; fi \
   && echo "Architecture for AWS CLI: $AWSCLI_ARCH" \
   && bash /awscli.sh "$AWSCLI_ARCH" && rm /awscli.sh
+
+#
+# PYTHON
+#
+
+# Python is installed through the base-software.sh script
+# Just ensure `python3` is the default `python`
+RUN ln -sf /usr/bin/python3 /usr/bin/python \
+  && ln -sf /usr/bin/pip3 /usr/bin/pip
+RUN python --version && pip --version
 
 #
 # DOCKER
@@ -227,7 +176,7 @@ LABEL org.opencontainers.image.title="custom-rootless-ubuntu-jammy"
 LABEL org.opencontainers.image.description="A customized Ubuntu Jammy (22.04 LTS) -based runner image for GitHub Actions, rootless"
 LABEL org.opencontainers.image.authors="Natalie Somersall (@some-natalie), Joona Kettunen (@joonarafael)"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.documentation="https://github.com/some-natalie/kubernoodles/README.md"
+LABEL org.opencontainers.image.documentation="https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/blob/master/image/README.md"
 
 ENV HOME=/home/runner
 ENV PATH="${PATH}:${HOME}/.local/bin:/home/runner/bin"
