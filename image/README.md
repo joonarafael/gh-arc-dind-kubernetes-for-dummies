@@ -6,6 +6,8 @@ Here I've provided a single Dockerfile that creates an image that will both run 
 
 If you are not happy with the image, you can always create your own custom image. Feel free to use my Dockerfile as a reference or consult the official starter file for a custom runner image, found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
+The image has been built and configured to run in the DinD mode. If you need a non-DinD image, this is not the image for you.
+
 **NOTE**! You cannot create any arbitrary Docker image. It has to be a valid Docker image capable of running the ARC runner set, both listener and runner pods.
 
 ## About My Custom Image
