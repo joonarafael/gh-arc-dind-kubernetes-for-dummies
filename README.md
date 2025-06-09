@@ -102,14 +102,13 @@ Update the `runnerImage` (present in two different places). If you are using a c
 
 To run your workflows on a custom runner image, you need to first create the custom image. The default documentation about this topic by GitHub can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
-I created a custom image called `jobba-custom`. The source Dockerfile used to build the image can be found [here](./image/Dockerfile "Dockerfile"). The prebuilt image ready for download is available [here](https://hub.docker.com/repository/docker/poser/jobba-custom/general "poser/jobba-custom | Docker Hub"). If that's sufficient for your needs, you can freely use it out-of-the-box. Otherwise, you can create your own custom image and use my Dockerfile as a reference.
+I created a custom image called `custom-arc-runner`. The source Dockerfile used to build the image can be found [here](./image/Dockerfile "Dockerfile"). The prebuilt image ready for download is available [here](https://hub.docker.com/repository/docker/poser/custom-arc-runner/general "poser/custom-arc-runner | Docker Hub"). If that's sufficient for your needs, you can freely use it out-of-the-box. Otherwise, you can create your own custom image and use my Dockerfile as a reference.
 
 The official starter Dockerfile for a custom runner image can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs"). It's wise to preinstall the tools you need in your workflows into the custom runner image.
 
 Build and push the image to Docker Hub. I've written more about this step in the [image/README.md](./image/README.md "image/README.md") file. Perform this step before continuing with the rest of the documentation.
 
-With my custom runner image now pushed to Docker Hub, the line in the `values.yml` file would be `docker.io/poser/jobba-custom:VX` where `VX` is the tag of the
-image.
+With my custom runner image now pushed to Docker Hub, the line in the `values.yml` file would be `docker.io/poser/custom-arc-runner:vX` where `vX` is the tag of the image.
 
 You don't have to opt for a custom image, as you can use the default one. If you do not specify the `runnerImage`, the runner set will use the default one. **Please note**, that the default image for self-hosted ARC systems **is not the same as** `ubuntu-latest` image available for GitHub-hosted runners. **The default self-hosted image does not include everything within** `ubuntu-latest`.
 

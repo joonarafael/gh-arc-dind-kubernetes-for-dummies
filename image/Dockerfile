@@ -152,7 +152,10 @@ RUN bash /caddy.sh && rm /caddy.sh
 
 # Install AWS CLI
 COPY images/software/get-awscli.sh /awscli.sh
-RUN bash /awscli.sh && rm /awscli.sh
+RUN ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) \
+  && if [ "$ARCH" = "arm64" ]; then export AWSCLI_ARCH=aarch64 ; else export AWSCLI_ARCH=x86_64 ; fi \
+  && echo "Architecture for AWS CLI: $AWSCLI_ARCH" \
+  && bash /awscli.sh "$AWSCLI_ARCH" && rm /awscli.sh
 
 #
 # DOCKER

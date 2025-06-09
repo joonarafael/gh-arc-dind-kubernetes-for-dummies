@@ -2,7 +2,7 @@
 
 A custom image is most likely required as the default image for self-hosted ARC systems **is not the same as** `ubuntu-latest` image available for GitHub-hosted runners. The default image for self-hosted ARC systems lacks many tools and libraries that are available in the `ubuntu-latest` image and your workflows most likely won't run without them. You can still always test first!
 
-Here I've provided a single Dockerfile that creates an image that will both run as the listener pod and the runner pod. To learn more about the image, check the [Dockerfile](./Dockerfile "Dockerfile"). You can read all the details there and see what kind of tools and libraries are installed. The image is already built and ready for download on [Docker Hub](https://hub.docker.com/repository/docker/poser/jobba-custom/general "poser/jobba-custom | Docker Hub").
+Here I've provided a single Dockerfile that creates an image that will both run as the listener pod and the runner pod. To learn more about the image, check the [Dockerfile](./Dockerfile "Dockerfile"). You can read all the details there and see what kind of tools and libraries are installed. The image is already built and ready for download on [Docker Hub](https://hub.docker.com/repository/docker/poser/custom-arc-runner/general "poser/custom-arc-runner | Docker Hub").
 
 If you are not happy with the image, you can always create your own custom image. Feel free to use my Dockerfile as a reference or consult the official starter file for a custom runner image, found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
