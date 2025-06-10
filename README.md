@@ -40,6 +40,14 @@ Now I assume you've got the Debian system ready, whichever solution you've chose
 
 Update any packages to the latest version. I recommend to install `openssh` to access the system via SSH. Configure SSH via `/etc/ssh/sshd_config`. Read complete documentation of `openssh` behind [this link](https://documentation.ubuntu.com/server/how-to/security/openssh-server/index.html "OpenSSH server - Ubuntu Server documentation").
 
+Important fields in the SSH configuration file include the following:
+
+```bash
+Port 22 # required to enable SSH
+PermitRootLogin no # recommended to disable root login
+PasswordAuthentication yes # required if you want to login with a password
+```
+
 ## 02 Install Docker
 
 Install Docker. Read the [Docker documentation](https://docs.docker.com/engine/install/ubuntu/ "Ubuntu | Docker Docs") for the latest instructions. Note that it's enough to have the Docker Engine installed here, on the host. For example, in my understanding, the `docker-compose` plugin is not needed for the host if it's installed on the runner image. The runner image will only need the **access** to the Docker Engine and **access** to the Docker socket (in DinD mode).
