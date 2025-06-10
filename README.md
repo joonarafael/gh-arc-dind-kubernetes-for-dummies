@@ -286,7 +286,17 @@ kubectl logs -p arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
 
 More documentation about `kubectl logs` can be found [here](https://kubernetes.io/docs/reference/kubectl/quick-reference/ "kubectl Quick Reference | Kubernetes").
 
-## XX Nuclear Bomb
+## X0 Automated Scripts
+
+**WIP**
+
+If you are inpatient, you can use the automated scripts to install all the required dependencies and initialize the runner set with little effort.
+
+_TODO: Add automated installation scripts here._
+
+_TODO: Add guide for automated installation scripts here._
+
+## X1 Nuclear Bomb
 
 If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything Kubernetes-related from all namespaces. Please be careful with this command as you will lose everything on your machine.
 
