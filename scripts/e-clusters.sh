@@ -28,13 +28,20 @@ fi
 
 GITHUB_PAT=$2
 
-###################
-# Init Kind Cluster
+
+####################
+# SOURCE ENVIRONMENT
+
+eval "$(cat ~/.bashrc | tail -n +10)"
+
+
+##############
+# KIND CLUSTER
 
 kind create cluster
 
 
-###
+###############
 # CONFIG VALUES
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -80,3 +87,11 @@ echo ""
 echo ""
 
 echo "Script execution finished. If no errors were reported, you can now start using the runner set."
+echo ""
+echo "For your GitHub repository $GITHUB_CONFIG_URL, you should soon see the runner set in the Actions tab."
+echo "If you don't see it, check the logs of the runner set in the namespace."
+
+echo ""
+echo ""
+
+echo "You may have to source your environment again with 'source ~/.bashrc' to get some of the newly installed tools to work."
