@@ -1,6 +1,6 @@
 # GitHub Actions Runner Controller for Kubernetes
 
-Updated 2025-06-09.
+Updated 2025-06-10.
 
 **Self-hosted runners for GitHub Actions**. Run all your workflows on your own infrastructure.
 
@@ -55,7 +55,7 @@ sudo usermod -aG docker ${USER}
 
 Install the Go programming language. Read [Go documentation](https://go.dev/doc/install "Download and install - The Go Programming Language") for the latest instructions.
 
-On a headless system, files and folders can be fetched from the internet, for example, via `curl`. Here you want to use `curl -L -O <url>`.
+On a headless system, files and folders can be fetched from the internet, for example, via `curl`. Here you want to use `curl -LO <url>`.
 
 As an post-install step for Go, you might need to add the Go binary to your `PATH`. Edit the `~/.bashrc` file and add the following lines:
 
@@ -71,6 +71,12 @@ Install `kubectl`. Read the [Kubernetes documentation](https://kubernetes.io/doc
 ## 05 Install kind
 
 Install `kind`. Make sure to install `kind` with `go install` method as instructed [here](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-with-go-install "kind - Quick Start").
+
+As the documentation states, the `go install` will most likely add the binary under `/home/user/go/bin`. You might need to add this to your `PATH` variable. Edit the `~/.bashrc` file and add the following lines:
+
+```bash
+export PATH=$PATH:/home/user/go/bin
+```
 
 ## 06 Install Helm
 
@@ -120,7 +126,7 @@ To initialize the runner set, run the following command next to the `values.yml`
 
 ```bash
 NAMESPACE="arc-systems"
-VERSION="0.10.1"
+VERSION="0.11.0"
 helm install arc \
     --version "${VERSION}" \
     --namespace "${NAMESPACE}" \
@@ -155,7 +161,7 @@ INSTALLATION_NAME="self-hosted-runners"
 NAMESPACE="arc-runners"
 GITHUB_CONFIG_URL="https://github.com/user/repo"
 GITHUB_PAT="<PAT>"
-VERSION="0.10.1"
+VERSION="0.11.0"
 helm install "${INSTALLATION_NAME}" \
     --version "${VERSION}" \
     --namespace "${NAMESPACE}" \
@@ -185,35 +191,82 @@ helm list -A
 You should see the following output:
 
 ```bash
-NAME                 NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                                       APP VERSION
-arc                  arc-systems     1               2025-06-08 11:45:59.152090536 +0000 UTC deployed        gha-runner-scale-set-controller-0.4.0       0.4.0
-self-hosted-runners  arc-runners     1               2025-06-08 11:46:13.451041354 +0000 UTC deployed        gha-runner-scale-set-0.4.0                  0.4.0
+NAME               	NAMESPACE  	REVISION	UPDATED                                	STATUS  	CHART                                 	APP VERSION
+arc                	arc-systems	1       	2025-06-10 10:05:54.123735703 +0000 UTC	deployed	gha-runner-scale-set-controller-0.11.0	0.11.0
+self-hosted-runners	arc-runners	1       	2025-06-10 10:10:27.055450595 +0000 UTC	deployed	gha-runner-scale-set-0.11.0           	0.11.0
 ```
 
 To check the status of the pods, run the following command:
 
 ```bash
 kubectl get pods -n arc-systems
-kubectl get pods -n arc-runners
 ```
 
 You should see the following output:
 
 ```bash
-NAME                                                   READY   STATUS    RESTARTS   AGE
-arc-gha-runner-scale-set-controller-594cdc976f-m7cjs   1/1     Running   0          64s
-arc-runner-set-754b578d-listener                       1/1     Running   0          12s
+NAME                                    READY   STATUS    RESTARTS   AGE
+arc-gha-rs-controller-57c67d4c7-wc5wb   1/1     Running   0          15m
+self-hosted-runners-754b578d-listener   1/1     Running   0          10m
 ```
 
 No pods should be restarting. However, it might take a while for the runners to be ready. So after the initial deployment, you might need to wait for a few minutes before the runners are ready. If they are restarting or exiting after 5 minutes, you might need to check the logs for the pods.
 
 One common problem can be that you have named the runner set with a conflicting name. One repository can not have multiple runner sets with the same name.
 
+Later on, when you've got actual workflows running, you can check the status of the workflow runner pods by running the following command:
+
+```bash
+kubectl get pods -n arc-runners
+```
+
 ## 13 Logs & Troubleshooting
 
-If you encounter some issues here, you can always check the logs for the pods. First identify the names of the relevant pods ...
+If you encounter some issues here, you can always check the logs for the pods. First identify the names of the relevant pods under the `NAME` column from the output of the following command.
 
-_TODO: Add some docs for logs and troubleshooting._
+```bash
+kubectl get pods -n arc-systems
+```
+
+If the names were to be `arc-gha-rs-controller-57c67d4c7-wc5wb` and `self-hosted-runners-754b578d-listener`, the logs would be available with:
+
+```bash
+kubectl logs arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
+```
+
+and
+
+```bash
+kubectl logs self-hosted-runners-754b578d-listener -n arc-runners
+```
+
+### Other useful `kubectl logs` options
+
+If you need to follow logs as they happen, e.g. stream logs in real-time (like `tail -f`), you can use the following command:
+
+```bash
+kubectl logs -f arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
+```
+
+To display only the last N lines of the logs, you can use the following command:
+
+```bash
+kubectl logs --tail=20 arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
+```
+
+To show logs newer than a specified duration (e.g., `1h`, `5m`, `30s`), you can use the following command:
+
+```bash
+kubectl logs --since=5m arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
+```
+
+To view logs of a previous incarnation of a container (if it restarted), you can use the following command:
+
+```bash
+kubectl logs -p arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
+```
+
+More documentation about `kubectl logs` can be found [here](https://kubernetes.io/docs/reference/kubectl/quick-reference/ "kubectl Quick Reference | Kubernetes").
 
 ## XX Nuclear Bomb
 
