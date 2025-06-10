@@ -308,6 +308,8 @@ At the end, the script will ask to re-evaluate your group membership. Enter your
 ./b-docker.sh
 ```
 
+Type in `docker ps -a` to ensure that Docker is running and you've got connection to the Docker socket.
+
 **Then, run the dependencies installation script.**
 
 ```bash

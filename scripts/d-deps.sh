@@ -32,16 +32,20 @@ sudo apt-get update
 # Download and install Go
 sudo rm -rf /usr/local/go || true
 
-curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" go${GO_VERSION}.linux-amd64.tar.gz
-tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
 
 sudo rm -rf go${GO_VERSION}.linux-amd64.tar.gz || true
 
 # Set environment variables
-echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.bashrc
-echo "export PATH=$PATH:$(go env GOPATH)/bin" >> ~/.bashrc
+echo "" >> ~/.bashrc
+echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
+echo "export PATH=\$PATH:\$(go env GOPATH)/bin" >> ~/.bashrc
 
-source ~/.bashrc
+# Sourcing the .bashrc won't work in non-interactive mode
+# So we need to extract the lines we need and eval them again
+# This is a dirty workaround, but it works
+eval "$(cat ~/.bashrc | tail -n +10)"
 
 # Verify installation
 go version
@@ -59,8 +63,8 @@ kubectl version --client
 
 go install sigs.k8s.io/kind@v${KIND_VERSION}
 
-echo "export PATH=$PATH:/home/${USER}/go/bin" >> ~/.bashrc
-source ~/.bashrc
+echo "export PATH=\$PATH:/home/${USER}/go/bin" >> ~/.bashrc
+eval "$(cat ~/.bashrc | tail -n +10)"
 
 # Verify installation
 kind version
