@@ -4,41 +4,43 @@ Updated 2025-06-10.
 
 **Self-hosted runners for GitHub Actions**. Run all your workflows on your own infrastructure.
 
-Configured to run on an automatically scaled set of runners, run as a Kubernetes controller. Setup to use Docker in Docker (DinD) to run the runners. Documentation includes the additional steps to use your custom runner image as the base image for the runners, which is most likely required as the default image for self-hosted ARC systems **does not include everything within** `ubuntu-latest` image available for GitHub-hosted runners.
+Configured to run on an automatically scaled set of runners (Kubernetes controller). Built to use **Docker in Docker** (**DinD**) to run the runners. Documentation includes the additional steps to use your custom runner image as the base image for the runners, which is most likely required as the default image for self-hosted ARC systems **does not include everything within** `ubuntu-latest` image available for GitHub-hosted runners.
 
 This documentation has been composed from my own notes. After many hours of trial and error, I've finally got it working and decided to write the notes down.
 
+**NOTE**! If you have any strict security requirements, or any other specific needs, please make sure to review the documentation and any related code before using it.
+
+### Official Docs
+
 You can find the entrypoint for the original GitHub documentation for self-hosted runners [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners "About self-hosted runners - GitHub Docs").
 
-The official Quickstart for Actions Runner Controller is located behind [this link](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/quickstart-for-actions-runner-controller "Quickstart for Actions Runner Controller - GitHub Docs").
+The official Quickstart for Actions Runner Controller by GitHub is located behind [this link](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/quickstart-for-actions-runner-controller "Quickstart for Actions Runner Controller - GitHub Docs").
 
-### Editor's note
+### Editor's Note
 
 _This documentation is written for absolutely noobs and dummies like myself. I've tried to write it so that anyone can understand it and follow the steps, even without any previous experience with Kubernetes or GitHub Actions. If you've got any additional questions or feedback, please feel free to send me message or open an issue/PR._
 
-_However, please keep in mind that many of these steps can be done in a different way. Maybe some steps can be skipped. Or maybe some tools or services can be used in a different way or replaced with something else. But the goal is to just get it working. So remember that this is just a guide and not a strict set of instructions. Also the implementation might not be the best possible or most optimized way to do it._
-
-_If you have any strict security requirements, or any other specific needs, please make sure to review the documentation and any related code before using it._
+_However, please keep in mind the target audience. Many of these steps can be done in a different way. Maybe some steps can be skipped. Or maybe some tools or services can be used in a different way or replaced with something else. But the goal is to just get it working. So remember that this is just a guide and not a strict set of instructions. Also the implementation might not be the best possible or most optimized way to do it._
 
 ## 00 Motivation, Considerations & Goal
 
 The goal of this project is to provide a self-hosted runner set to run all your GitHub Actions workflows for one of your own repositories. The complete runner set is configured to run on your own infrastructure.
 
-The runner set is configured to run on an automatically scaled set of runners, powered by a Kubernetes controller. It will be configured to use Docker in Docker (DinD) to **enable users to use any Docker features within their workflows**.
+The runner set is configured to run on an automatically scaled set of runners, powered by a Kubernetes controller. It will be configured to use Docker in Docker (DinD) to **enable users to use any Docker features within their workflows**. Please note that the provided assets are configured to run in DinD mode. Consult other documentation as well if you need a non-DinD setup.
 
-This was my goal from the get-go, but I just could not find any comprehensive documentation on how to do this. So I read the GitHub Actions documentation, issues, various forums, articles, and blog posts. And a lot of trial and error. But finally, I've got it working and decided to write the notes down. A really valuable resource has also been [this great blog post](https://some-natalie.dev/blog/kubernoodles-pt-5/ "Creating custom images for actions-runner-controller | Some Natalie's corner of the internet") by [@some-natalie](https://github.com/some-natalie "some-natalie (Natalie Somersall)").
+This DinD runner set was my goal from the get-go, but I just could not find any comprehensive documentation **from one place** on how to do this. So I read the GitHub Actions documentation, issues, various forums, articles, and blog posts. And a lot of trial and error. But finally, I've got it working and decided to write the notes down into a single source. A really valuable resource has also been [this great blog post](https://some-natalie.dev/blog/kubernoodles-pt-5/ "Creating custom images for actions-runner-controller | Some Natalie's corner of the internet") by [@some-natalie](https://github.com/some-natalie "some-natalie (Natalie Somersall)").
 
 ## 01 Prerequisites
 
-Start by identifying and choosing the hardware to run on. I've run it on a separate physical server machine running [Proxmox](https://www.proxmox.com/en/ "Proxmox - Powerful open source server solutions"). I've got 8 cores, 16GB of RAM and 256GB of storage. When needed, I added more RAM with swap. I think the listed hardware is kind of an low-endish setup. Less cores or less RAM might just not be enough.
+Start by identifying and choosing the hardware to run on. I've run it on a separate physical server machine running [Proxmox](https://www.proxmox.com/en/ "Proxmox - Powerful open source server solutions"). I've got 8 cores, 16GB of RAM and 256GB of storage. I think the listed hardware is kind of an low-endish setup. Less cores or less RAM might just not be enough.
 
-I initialized a new VM on the Proxmox and installed [Ubuntu Server 24.04 LTS](https://ubuntu.com/download/server "Get Ubuntu Server | Download | Ubuntu") on it. Proxmox is a great way to run multiple virtual machines on a single physical machine. Of course, it is not a prerequisite, but it's a great way to run the runner set on a separate, completely isolated VM, in a dedicated environment reserved just for the ARC set.
+I initialized a new VM on the Proxmox and installed [Ubuntu Server 24.04 LTS](https://ubuntu.com/download/server "Get Ubuntu Server | Download | Ubuntu") on it. For the runner VM, I gave it 4 cores and 8GB of RAM. When needed, I added more RAM with swap. Proxmox is a great way to run multiple virtual machines on a single physical machine. Of course, it is not a prerequisite, but it's a great way to run the runner set on a separate, completely isolated VM, in a dedicated environment reserved just for the ARC set.
 
-The runner set can be run on any machine, of course, but it's recommended to run it on a separate, dedicated VM. This ensures that there are no conflicting installations or other mismatching dependencies or environment issues.
+The runner set can be run on any machine, of course, but I recommend to run it on a separate, dedicated VM. This ensures that there are no conflicting installations, mismatching dependencies, Docker problems, or other environment issues.
 
-Now I assume you've got the Debian system ready, whichever solution you've chosen.
+Now I assume you've got the Ubuntu (or some Debian-based system) ready, whichever solution you've chosen.
 
-Update any packages to the latest version. I recommend to install `openssh` to access the system via SSH. Configure SSH via `/etc/ssh/sshd_config`. Read complete documentation of `openssh` behind [this link](https://documentation.ubuntu.com/server/how-to/security/openssh-server/index.html "OpenSSH server - Ubuntu Server documentation").
+Update all packages to the latest version. I also recommend to install `openssh` to access the system via SSH. Configure SSH via `/etc/ssh/sshd_config`. Read complete documentation of `openssh` behind [this link](https://documentation.ubuntu.com/server/how-to/security/openssh-server/index.html "OpenSSH server - Ubuntu Server documentation").
 
 Important fields in the SSH configuration file include the following:
 
@@ -72,11 +74,11 @@ export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
-## 04 Install kubectl
+## 04 Install `kubectl`
 
 Install `kubectl`. Read the [Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/ "Install and Set Up kubectl on Linux | Kubernetes") for the latest instructions.
 
-## 05 Install kind
+## 05 Install `kind`
 
 Install `kind`. Make sure to install `kind` with `go install` method as instructed [here](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-with-go-install "kind - Quick Start").
 
@@ -102,7 +104,7 @@ Create a new file called `values.yml` with `touch values.yml`. I've placed the f
 
 Open the file (for example, with `nano values.yml`) and add the content found in the [adjacent example file](./values.yml "values.yml").
 
-### Configure the `values.yml` file
+### Configure The `values.yml` File
 
 Set the minimum and maximum number of runners to some reasonable values. Low-end machines might not be able to handle more than a couple of runners. The computational strain of a single runner largely depends on the workflows you run on it.
 
@@ -113,6 +115,8 @@ Please note that DinD mode will override some of the configurations. In general,
 Update the `runnerImage` (present in two different places). If you are using a custom runner image, update the image name and tag. If you are using the default runner image, you can comment it out.
 
 ### Custom Runner Images
+
+With "Runner Images" I mean the images that are used to run the workflows. For the GitHub-hosted runners, the default image is `ubuntu-latest`. For the self-hosted runners, the default image is `actions/runner:latest`. The self-hosted image is a bit more limited than the GitHub-hosted one and most likely not sufficient for your needs.
 
 To run your workflows on a custom runner image, you need to first create the custom image. The default documentation about this topic by GitHub can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
@@ -145,6 +149,8 @@ helm install arc \
 
 **NOTE**! Make sure to update the `VERSION` variable to the latest version of the runner set or use the specific version you want to use. All releases for `arc` can be found [here](https://github.com/actions/actions-runner-controller/releases "Releases • actions/actions-runner-controller").
 
+**NOTE**! You can change the `NAMESPACE` to your liking, but in such case the remaining commands of this documentation require further adjustments.
+
 ## 10 Get a Private Access Token
 
 From your GitHub account, go to _Settings_ -> _Developer settings_ -> _Personal access tokens_ and create a new private access token, or PAT.
@@ -160,7 +166,7 @@ Not sure if all of these are needed, but I've added them all just to be safe.
 
 Copy the PAT and save it somewhere safe. You will need it later.
 
-## 11 Initialize the ARC Runners
+## 11 Initialize The ARC Runners
 
 Again, execute the following command next to the `values.yml` file:
 
@@ -188,7 +194,7 @@ helm install "${INSTALLATION_NAME}" \
 
 **NOTE**! Make sure to update the `GITHUB_PAT` variable to the PAT you created in step 10.
 
-## 12 Verify the Runners
+## 12 Verify The Runners
 
 To check the status of the runner set, run the following command:
 
@@ -248,7 +254,9 @@ and
 kubectl logs self-hosted-runners-754b578d-listener -n arc-runners
 ```
 
-### Other useful `kubectl logs` options
+respectively.
+
+### Other Useful `kubectl logs` Options
 
 If you need to follow logs as they happen, e.g. stream logs in real-time (like `tail -f`), you can use the following command:
 
@@ -256,7 +264,9 @@ If you need to follow logs as they happen, e.g. stream logs in real-time (like `
 kubectl logs -f arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
 ```
 
-To display only the last N lines of the logs, you can use the following command:
+(Assuming the aforementioned names of the pods.)
+
+To display only the last _N_ lines of the logs, you can use the following command:
 
 ```bash
 kubectl logs --tail=20 arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
