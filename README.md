@@ -290,6 +290,8 @@ More documentation about `kubectl logs` can be found [here](https://kubernetes.i
 
 If you are inpatient, you can use the automated scripts to install all the required dependencies and initialize the runner set with little effort. Please still read through the scripts to understand what you are literally executing on your own machine!
 
+The provided scripts will execute everything described in this documentation starting from step 02.
+
 **Step 1: Fetch the setup scripts.**
 
 ```bash
