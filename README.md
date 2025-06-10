@@ -290,7 +290,7 @@ More documentation about `kubectl logs` can be found [here](https://kubernetes.i
 
 If you are inpatient, you can use the automated scripts to install all the required dependencies and initialize the runner set with little effort. Please still read through the scripts to understand what you are literally executing on your own machine!
 
-**First, fetch the setup scripts.**
+**Step 1: Fetch the setup scripts.**
 
 ```bash
 curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/a-setup.sh
@@ -300,7 +300,7 @@ chmod u+x ./a-setup.sh
 
 Enter your password if prompted.
 
-**After the script has finished, run the Docker installation script.**
+**Step 2: Run the Docker installation script.**
 
 At the end, the script will ask to re-evaluate your group membership. Enter your password.
 
@@ -310,13 +310,17 @@ At the end, the script will ask to re-evaluate your group membership. Enter your
 
 Type in `docker ps -a` to ensure that Docker is running and you've got connection to the Docker socket.
 
-**Then, run the dependencies installation script.**
+**Step 3: Run the dependencies installation & runner set initialization script.**
 
 ```bash
-./c-run.sh 1.24.4 0.29.0
+GO_VERSION=1.24.4
+KIND_VERSION=0.29.0
+GITHUB_CONFIG_URL="https://github.com/user/repo"
+GITHUB_PAT="<PAT>"
+./c-run.sh $GO_VERSION $KIND_VERSION $GITHUB_CONFIG_URL $GITHUB_PAT
 ```
 
-If you want to use a different version of Go or Kind, you can change the version numbers in the script. The command above works as `./c-run.sh <go_version> <kind_version>`.
+Please replace the `GITHUB_CONFIG_URL` and `GITHUB_PAT` with your own values. The Go and Kind versions can be also updated, if new versions are available.
 
 ## X1 Nuclear Bomb
 
