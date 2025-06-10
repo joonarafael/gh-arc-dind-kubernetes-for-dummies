@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS build
+FROM ubuntu:24.04 AS build
 
 #
 # ARGS & ENV
@@ -172,15 +172,15 @@ FROM scratch AS final
 
 # Labels
 LABEL org.opencontainers.image.source="https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies"
-LABEL org.opencontainers.image.title="custom-rootless-ubuntu-jammy"
-LABEL org.opencontainers.image.description="A customized Ubuntu Jammy (22.04 LTS) -based runner image for GitHub Actions, rootless"
-LABEL org.opencontainers.image.authors="Natalie Somersall (@some-natalie), Joona Kettunen (@joonarafael)"
+LABEL org.opencontainers.image.title="custom-rootless-ubuntu-noble"
+LABEL org.opencontainers.image.description="A customized Ubuntu Noble (24.04 LTS) -based runner image for GitHub Actions, rootless"
+LABEL org.opencontainers.image.authors="Joona Kettunen (@joonarafael), Natalie Somersall (@some-natalie)"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.documentation="https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/blob/master/image/README.md"
 
 ENV HOME=/home/runner
 ENV PATH="${PATH}:${HOME}/.local/bin:/home/runner/bin"
-ENV ImageOS=ubuntu22
+ENV ImageOS=ubuntu24
 
 USER runner
 

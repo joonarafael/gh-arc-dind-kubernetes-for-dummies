@@ -14,7 +14,7 @@ The image has been built and configured to run in the DinD mode. If you need a n
 
 Heavily inspired by [this great blog post](https://some-natalie.dev/blog/kubernoodles-pt-5/ "Creating custom images for actions-runner-controller | Some Natalie's corner of the internet") by [@some-natalie](https://github.com/some-natalie "some-natalie (Natalie Somersall)").
 
-The runners are built on the base image of Ubuntu 22.04.
+The runners are built on the base image of Ubuntu 24.04.
 
 Update base Ubuntu version in the Dockerfile to the latest version, if you want. Check available base images from [Docker Hub](https://hub.docker.com/_/ubuntu "ubuntu - Official Image | Docker Hub"). Updating the version might break something, so be careful.
 
