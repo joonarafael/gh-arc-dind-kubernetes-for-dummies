@@ -288,13 +288,33 @@ More documentation about `kubectl logs` can be found [here](https://kubernetes.i
 
 ## X0 Automated Scripts
 
-**WIP**
+If you are inpatient, you can use the automated scripts to install all the required dependencies and initialize the runner set with little effort. Please still read through the scripts to understand what you are literally executing on your own machine!
 
-If you are inpatient, you can use the automated scripts to install all the required dependencies and initialize the runner set with little effort.
+**First, fetch the setup scripts.**
 
-_TODO: Add automated installation scripts here._
+```bash
+curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/a-setup.sh
+chmod u+x ./a-setup.sh
+./a-setup.sh
+```
 
-_TODO: Add guide for automated installation scripts here._
+Enter your password if prompted.
+
+**After the script has finished, run the Docker installation script.**
+
+At the end, the script will ask to re-evaluate your group membership. Enter your password.
+
+```bash
+./b-docker.sh
+```
+
+**Then, run the dependencies installation script.**
+
+```bash
+./c-run.sh 1.24.4 0.29.0
+```
+
+If you want to use a different version of Go or Kind, you can change the version numbers in the script. The command above works as `./c-run.sh <go_version> <kind_version>`.
 
 ## X1 Nuclear Bomb
 
