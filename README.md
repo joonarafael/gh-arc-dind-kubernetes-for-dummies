@@ -322,6 +322,14 @@ GITHUB_PAT="<PAT>"
 
 Please replace the `GITHUB_CONFIG_URL` and `GITHUB_PAT` with your own values. The Go and Kind versions can be also updated, if new versions are available.
 
+**Step 4: Cleanup**
+
+If everything went well, you can remove the scripts with the following command:
+
+```bash
+./f-clean.sh
+```
+
 ## X1 Nuclear Bomb
 
 If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything Kubernetes-related from all namespaces. Please be careful with this command as you will lose everything on your machine.
