@@ -324,7 +324,7 @@ Please replace the `GITHUB_CONFIG_URL` and `GITHUB_PAT` with your own values. Th
 
 **Step 4: Cleanup**
 
-If everything went well, you can remove the scripts with the following command:
+If everything went well, you can remove the scripts from your machine with the following command:
 
 ```bash
 ./f-clean.sh

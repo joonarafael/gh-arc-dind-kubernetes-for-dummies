@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+###################################################################
+# SCRIPT TO INITIALIZE THE KIND CLUSTER AND INSTALL THE HELM CHARTS
+
 ###########
 # CONSTANTS
 
@@ -8,6 +11,7 @@ NAMESPACE_RUNNERS="arc-runners"
 
 VERSION="0.11.0"
 INSTALLATION_NAME="self-hosted-runners"
+
 
 ################
 # VALIDATE INPUT
@@ -70,6 +74,10 @@ helm install "${INSTALLATION_NAME}" \
     --set githubConfigUrl="${GITHUB_CONFIG_URL}" \
     --set githubConfigSecret.github_token="${GITHUB_PAT}" \
     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+
+
+#############
+# INFORM USER
 
 echo ""
 echo ""

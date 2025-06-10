@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+###########################################################
+# SCRIPT TO INSTALL ALL REQUIRED DEPENDENCIES FOR THE SETUP
+
 ################
 # VALIDATE INPUT
 
@@ -18,6 +21,7 @@ if [ -z "$2" ]; then
 fi
 
 KIND_VERSION=$2
+
 
 ##############
 # BASIC SYSTEM

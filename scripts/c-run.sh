@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
-######################################
-# RUNNER SETUP SCRIPT
-
-# This script is controlling all the other setup scripts.
-
+###########################################
+# SCRIPT TO RUN ALL THE OTHER SETUP SCRIPTS
 
 ################
 # VALIDATE INPUT
@@ -40,6 +37,10 @@ if [ -z "$4" ]; then
 fi
 
 GITHUB_PAT=$4
+
+
+########################
+# CALL THE OTHER SCRIPTS
 
 ./d-deps.sh $GO_VERSION $KIND_VERSION
 ./e-clusters.sh $GITHUB_CONFIG_URL $GITHUB_PAT

@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 
-#########################################
-# SETUP TO FETCH ALL THE REQUIRED SCRIPTS
+##################################################
+# SCRIPT TO GET THE SCRIPTS AND UPDATE PERMISSIONS
+
+################################
+# FETCH ALL THE REQUIRED SCRIPTS
 
 curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/b-docker.sh
 curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/c-run.sh
 curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/d-deps.sh
 curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/e-clusters.sh
 curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/f-clean.sh
+
+
+####################
+# UPDATE PERMISSIONS
 
 chmod u+x ./b-docker.sh
 chmod u+x ./c-run.sh
