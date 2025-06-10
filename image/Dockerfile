@@ -47,13 +47,14 @@ RUN bash /base-libs.sh && rm /base-libs.sh
 #
 
 # Runner user
-RUN adduser --disabled-password --gecos "" --uid 1000 runner \
+RUN if id 1000 >/dev/null 2>&1; then userdel -r $(id -nu 1000) 2>/dev/null || true; fi \
+  && adduser --disabled-password --gecos "" --uid 1000 runner \
   && usermod -aG sudo runner \
   && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers
 
 # Make and set the working directory
 RUN mkdir -p /home/runner \
-  && chown -R $USERNAME:$GID /home/runner
+  && chown -R runner:runner /home/runner
 
 WORKDIR /home/runner
 

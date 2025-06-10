@@ -15,11 +15,10 @@ apt-get install -y --no-install-recommends \
   iproute2 \
   iptables \
   jq \
-  libasound2 \
+  libasound2t64 \
   libgbm-dev \
-  libgconf-2-4 \
-  libgtk-3-0 \
-  libgtk2.0-0 \
+  libgtk-3-0t64 \
+  libgtk2.0-0t64 \
   libnotify-dev \
   libnss3 \
   libnss3-tools \
@@ -46,5 +45,4 @@ apt-get install -y --no-install-recommends \
   wget \
   xauth \
   xvfb \
-  xz-utils \
-  zip
+  xz-utils
