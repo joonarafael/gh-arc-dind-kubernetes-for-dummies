@@ -10,7 +10,7 @@ template:
   spec:
     initContainers:
       - name: init-dind-externals
-        image: docker.io/poser/custom-arc-runner:v2
+        image: docker.io/poser/custom-arc-runner:v3
         imagePullPolicy: IfNotPresent
         command:
           ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
@@ -19,7 +19,7 @@ template:
             mountPath: /home/runner/tmpDir
     containers:
       - name: runner
-        image: docker.io/poser/custom-arc-runner:v2
+        image: docker.io/poser/custom-arc-runner:v3
         imagePullPolicy: IfNotPresent
         command: ["/home/runner/run.sh"]
         env:

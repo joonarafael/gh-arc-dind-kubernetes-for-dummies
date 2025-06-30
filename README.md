@@ -1,6 +1,6 @@
 # GitHub Actions Runner Controller for Kubernetes
 
-Updated 2025-06-10.
+Updated 2025-06-30.
 
 **Self-hosted runners for GitHub Actions**. Run all your workflows on your own infrastructure.
 
@@ -138,7 +138,7 @@ To initialize the runner set, run the following command next to the `values.yml`
 
 ```bash
 NAMESPACE="arc-systems"
-VERSION="0.11.0"
+VERSION="0.12.1"
 helm install arc \
     --version "${VERSION}" \
     --namespace "${NAMESPACE}" \
@@ -175,7 +175,7 @@ INSTALLATION_NAME="self-hosted-runners"
 NAMESPACE="arc-runners"
 GITHUB_CONFIG_URL="https://github.com/user/repo"
 GITHUB_PAT="<PAT>"
-VERSION="0.11.0"
+VERSION="0.12.1"
 helm install "${INSTALLATION_NAME}" \
     --version "${VERSION}" \
     --namespace "${NAMESPACE}" \
@@ -206,8 +206,8 @@ You should see the following output:
 
 ```bash
 NAME               	NAMESPACE  	REVISION	UPDATED                                	STATUS  	CHART                                 	APP VERSION
-arc                	arc-systems	1       	2025-06-10 10:05:54.123735703 +0000 UTC	deployed	gha-runner-scale-set-controller-0.11.0	0.11.0
-self-hosted-runners	arc-runners	1       	2025-06-10 10:10:27.055450595 +0000 UTC	deployed	gha-runner-scale-set-0.11.0           	0.11.0
+arc                	arc-systems	1       	2025-06-10 10:05:54.123735703 +0000 UTC	deployed	gha-runner-scale-set-controller-0.12.1	0.12.1
+self-hosted-runners	arc-runners	1       	2025-06-10 10:10:27.055450595 +0000 UTC	deployed	gha-runner-scale-set-0.12.1           	0.12.1
 ```
 
 To check the status of the pods, run the following command:
@@ -286,53 +286,7 @@ kubectl logs -p arc-gha-rs-controller-57c67d4c7-wc5wb -n arc-systems
 
 More documentation about `kubectl logs` can be found [here](https://kubernetes.io/docs/reference/kubectl/quick-reference/ "kubectl Quick Reference | Kubernetes").
 
-## X0 Automated Scripts
-
-If you are inpatient, you can use the automated scripts to install all the required dependencies and initialize the runner set with little effort. Please still read through the scripts to understand what you are literally executing on your own machine!
-
-The provided scripts will execute everything described in this documentation starting from step 02.
-
-**Step 1: Fetch the setup scripts.**
-
-```bash
-curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/refs/heads/master/scripts/a-setup.sh
-chmod u+x ./a-setup.sh
-./a-setup.sh
-```
-
-Enter your password if prompted.
-
-**Step 2: Run the Docker installation script.**
-
-At the end, the script will ask to re-evaluate your group membership. Enter your password.
-
-```bash
-./b-docker.sh
-```
-
-Type in `docker ps -a` to ensure that Docker is running and you've got connection to the Docker socket.
-
-**Step 3: Run the dependencies installation & runner set initialization script.**
-
-```bash
-GO_VERSION=1.24.4
-KIND_VERSION=0.29.0
-GITHUB_CONFIG_URL="https://github.com/user/repo"
-GITHUB_PAT="<PAT>"
-./c-run.sh $GO_VERSION $KIND_VERSION $GITHUB_CONFIG_URL $GITHUB_PAT
-```
-
-Please replace the `GITHUB_CONFIG_URL` and `GITHUB_PAT` with your own values. The Go and Kind versions can be also updated, if new versions are available.
-
-**Step 4: Cleanup**
-
-If everything went well, you can remove the scripts from your machine with the following command:
-
-```bash
-./f-clean.sh
-```
-
-## X1 Nuclear Bomb
+## XX Nuclear Bomb
 
 If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything Kubernetes-related from all namespaces. Please be careful with this command as you will lose everything on your machine.
 

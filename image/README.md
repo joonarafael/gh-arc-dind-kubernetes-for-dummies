@@ -32,6 +32,10 @@ Make sure to update the following versions in the Dockerfile:
 
 - `COMPOSE_VERSION`, check latest versions, for example, from the [release notes](https://docs.docker.com/compose/release-notes/ "Release notes | Docker Docs").
 
+- `GO_VERSION`, check latest versions, for example, from the [release notes](https://go.dev/dl/ "All releases - The Go Programming Language").
+
+- `NODE_VERSION`, check latest versions, for example, from the [release notes](https://nodejs.org/en/about/previous-releases "Node.js - Node.js Releases").
+
 ### Environment variables
 
 Any required environment variables can be imported with the `images/.env` file into the Dockerfile.
