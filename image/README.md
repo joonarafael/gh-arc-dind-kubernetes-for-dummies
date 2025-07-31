@@ -16,6 +16,8 @@ Heavily inspired by [this great blog post](https://some-natalie.dev/blog/kuberno
 
 The runners are built on the base image of Ubuntu 24.04. The first tag of the image, `v1`, was built on Ubuntu 22.04. If you need to use the image on Ubuntu 22.04, use the `v1` tag. If you wish to customize your own image based on the `v1` version, please check the old Dockerfile from [this release](https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/releases/tag/v1 "Release v1: 2025-09-06: Init · joonarafael/gh-arc-dind-kubernetes-for-dummies").
 
+On top of the required software to run the ARC runner set, the image also includes _Caddy_ and _Nginx_, as well as _Node.js_, _Yarn_, _Golang_, _GitHub CLI_, _Docker Compose_, _Python_, and _AWS CLI_.
+
 ## Customizing The Image
 
 You can check available Ubuntu base images from [Docker Hub](https://hub.docker.com/_/ubuntu "ubuntu - Official Image | Docker Hub"). Updating the version might break something, so be careful.

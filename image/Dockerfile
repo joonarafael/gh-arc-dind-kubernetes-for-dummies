@@ -5,19 +5,19 @@ FROM ubuntu:24.04 AS build
 #
 
 # GitHub runner arguments
-ARG RUNNER_VERSION=2.325.0
+ARG RUNNER_VERSION=2.327.1
 ARG RUNNER_CONTAINER_HOOKS_VERSION=0.7.0
 
 # Docker and Compose arguments
-ARG DOCKER_VERSION=28.3.0
-ARG COMPOSE_VERSION=v2.37.2
+ARG DOCKER_VERSION=28.3.3
+ARG COMPOSE_VERSION=v2.39.1
 
 # Dumb-init version
 ARG DUMB_INIT_VERSION=1.2.5
 
 # Golang & Node
-ARG GO_VERSION=1.24.4
-ARG NODE_VERSION=22
+ARG GO_VERSION=1.24.5
+ARG NODE_VERSION=24
 
 # Other arguments, expose TARGETPLATFORM for multi-arch builds
 ARG DEBUG=false
@@ -85,6 +85,10 @@ RUN bash /go.sh "${GO_VERSION}" && rm /go.sh
 # Install Caddy
 COPY images/software/get-caddy.sh /caddy.sh
 RUN bash /caddy.sh && rm /caddy.sh
+
+# Install Nginx
+COPY images/software/get-nginx.sh /nginx.sh
+RUN bash /nginx.sh && rm /nginx.sh
 
 # Install Node & Yarn
 COPY images/software/get-node-yarn.sh /node-yarn.sh

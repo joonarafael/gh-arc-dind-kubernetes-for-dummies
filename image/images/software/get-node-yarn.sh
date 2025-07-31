@@ -14,6 +14,9 @@ apt-get install nodejs -y --no-install-recommends
 # Install Yarn globally
 npm install --global yarn
 
+# Enable Yarn 4.9.2
+yarn set version 4.9.2
+
 # Verify installations
 echo "Node.js version: $(node -v)"
 echo "NPM version: $(npm -v)"
