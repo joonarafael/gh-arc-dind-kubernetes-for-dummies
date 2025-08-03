@@ -4,8 +4,6 @@ A custom image is most likely required as the default image for self-hosted ARC 
 
 Here I've provided a single Dockerfile that creates an image that will both run as the listener pod and the runner pod. To learn more about the image, check the [Dockerfile](./Dockerfile "Dockerfile"). You can read all the details there and see what kind of tools and libraries are installed. The image is already built and ready for download on [Docker Hub](https://hub.docker.com/repository/docker/poser/custom-arc-runner/general "poser/custom-arc-runner | Docker Hub").
 
-Please note that the multi-platform builds have been started only after version `v5`. Versions 1 to 4 only support `linux/arm64` builds.
-
 If you are not happy with the image, you can always create your own custom image. Feel free to use my Dockerfile as a reference or consult the official starter file for a custom runner image, found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
 The image has been built and configured to run in the DinD mode. If you need a non-DinD image, this is not the image for you.

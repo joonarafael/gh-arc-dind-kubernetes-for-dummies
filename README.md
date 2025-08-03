@@ -134,8 +134,6 @@ To run your workflows on a custom runner image, you need to first create the cus
 
 I created a custom image called `custom-arc-runner`. The source Dockerfile used to build the image can be found [here](./image/Dockerfile "Dockerfile"). The prebuilt image ready for download is available [here](https://hub.docker.com/repository/docker/poser/custom-arc-runner/general "poser/custom-arc-runner | Docker Hub"). If that's sufficient for your needs, you can freely use it out-of-the-box. Otherwise, you can create your own custom image and use my Dockerfile as a reference.
 
-**Please note** that it supports multi-platform (amd64 and arm64) builds only after version `v5`. Versions 1 to 4 only support `linux/arm64` builds.
-
 The official starter Dockerfile for a custom runner image provided by GitHub can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs"). It's wise to preinstall the tools you need in your workflows into the custom runner image.
 
 Build and push the image to Docker Hub. I've written more about this step in the [image/README.md](./image/README.md "image/README.md") file. Perform this step before continuing with the rest of the documentation.

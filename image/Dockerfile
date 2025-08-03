@@ -35,19 +35,20 @@ COPY images/.env /.env
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 #
-# BASE SOFTWARE & JOBBA CI/CD DEPENDENCIES
+# BASE SOFTWARE & MY OWN CI/CD DEPENDENCIES
 #
 
 # Install base software & libraries
 COPY images/software/base-software.sh /base-libs.sh
 RUN bash /base-libs.sh && rm /base-libs.sh
 
-#
-# RUNNER SPECIFIC
-#
-
 # Runner user
-RUN adduser --disabled-password --gecos "" --uid 1001 runner
+RUN adduser --disabled-password --gecos "" --uid 1001 runner \
+&& groupadd docker --gid 123 || true \
+&& usermod -aG sudo runner \
+&& usermod -aG docker runner \
+&& echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers \
+&& echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >> /etc/sudoers
 
 # Make and set the working directory
 RUN mkdir -p /home/runner \
@@ -56,7 +57,7 @@ RUN mkdir -p /home/runner \
 WORKDIR /home/runner
 
 #
-# ADDITIONALLY REQUIRED SOFTWARE
+# ADDITIONALLY REQUIRED SOFTWARE & MY OWN CI/CD DEPENDENCIES
 #
 
 # Install GitHub CLI
