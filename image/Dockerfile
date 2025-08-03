@@ -47,10 +47,7 @@ RUN bash /base-libs.sh && rm /base-libs.sh
 #
 
 # Runner user
-RUN if id 1000 >/dev/null 2>&1; then userdel -r $(id -nu 1000) 2>/dev/null || true; fi \
-  && adduser --disabled-password --gecos "" --uid 1000 runner \
-  && usermod -aG sudo runner \
-  && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers
+RUN adduser --disabled-password --gecos "" --uid 1001 runner
 
 # Make and set the working directory
 RUN mkdir -p /home/runner \
@@ -116,8 +113,10 @@ RUN python --version && pip --version
 #
 
 # Install Docker
-RUN export DOCKER_ARCH=x86_64 \
-  && if [ "$RUNNER_ARCH" = "arm64" ]; then export DOCKER_ARCH=aarch64 ; fi \
+RUN export ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) \
+  && echo "ARCH: $ARCH" \
+  && if [ "$ARCH" = "arm64" ]; then export DOCKER_ARCH=aarch64 ; fi \
+  && if [ "$ARCH" = "amd64" ]; then export DOCKER_ARCH=x86_64 ; fi \
   && curl -fLo docker.tgz https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/docker-${DOCKER_VERSION}.tgz \
   && tar zxvf docker.tgz \
   && rm -rf docker.tgz
@@ -149,9 +148,9 @@ RUN ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) \
   && chmod +x /usr/local/bin/dumb-init
 
 # Make the rootless runner directory and externals directory executable
-RUN mkdir -p /run/user/1000 \
-  && chown runner:runner /run/user/1000 \
-  && chmod a+x /run/user/1000 \
+RUN mkdir -p /run/user/1001 \
+  && chown runner:runner /run/user/1001 \
+  && chmod a+x /run/user/1001 \
   && mkdir -p /home/runner/externals \
   && chown runner:runner /home/runner/externals \
   && chmod a+x /home/runner/externals
@@ -182,11 +181,15 @@ FROM scratch AS final
 
 # Labels
 LABEL org.opencontainers.image.source="https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies"
-LABEL org.opencontainers.image.title="custom-rootless-ubuntu-noble"
-LABEL org.opencontainers.image.description="A customized Ubuntu Noble (24.04 LTS) -based runner image for GitHub Actions, rootless"
+LABEL org.opencontainers.image.title="custom-rootless-ubuntu-numbat"
+LABEL org.opencontainers.image.description="A customized Ubuntu Noble Numbat (24.04 LTS) -based runner image for GitHub Actions, rootless"
 LABEL org.opencontainers.image.authors="Joona Kettunen (@joonarafael), Natalie Somersall (@some-natalie)"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.documentation="https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/blob/master/image/README.md"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV RUNNER_MANUALLY_TRAP_SIG=1
+ENV ACTIONS_RUNNER_PRINT_LOG_TO_STDOUT=1
 
 ENV HOME=/home/runner
 ENV PATH="${PATH}:${HOME}/.local/bin:/home/runner/bin"

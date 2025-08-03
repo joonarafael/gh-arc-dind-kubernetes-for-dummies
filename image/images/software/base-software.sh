@@ -37,6 +37,7 @@ apt-get install -y --no-install-recommends \
   qemu-system \
   software-properties-common \
   sudo \
+  tar \
   tidy \
   time \
   tzdata \
@@ -45,4 +46,8 @@ apt-get install -y --no-install-recommends \
   wget \
   xauth \
   xvfb \
-  xz-utils
+  xz-utils \
+  zip
+
+apt-get clean
+rm -rf /var/lib/apt/lists/*

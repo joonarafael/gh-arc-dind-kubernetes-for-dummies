@@ -1,10 +1,10 @@
 # Self-Hosted GitHub Actions Runner Controller for Kubernetes
 
-Updated 2025-08-02.
+Updated 2025-08-03.
 
 **Self-hosted runners for GitHub Actions**. Run all your workflows on your own infrastructure.
 
-Configured to run on an automatically scaled set of runners (Kubernetes controller). Built to use **Docker in Docker** (**DinD**) to run the runners. Documentation includes the additional steps to use your custom runner image as the base image for the runners, which is most likely required as the default image for self-hosted ARC systems **does not include everything within** `ubuntu-latest` image available for GitHub-hosted runners.
+Configured to run on an automatically scaled set of runners (Kubernetes controller). Built to use **Docker in Docker** (**DinD**) to run the runners. Documentation includes the additional steps to use your custom runner image as the _base image_ for the runners, which is used as the default image for self-hosted ARC systems, **does not include everything within** `ubuntu-latest` image available for GitHub-hosted runners.
 
 This documentation has been composed from my own notes. After many hours of trial and error, I've finally got it working and decided to write the notes down.
 
@@ -18,7 +18,7 @@ The official Quickstart for Actions Runner Controller by GitHub is located behin
 
 ### Editor's Note
 
-_This documentation is written for absolutely noobs and dummies like myself. I've tried to write it so that anyone can understand it and follow the steps, even without any previous experience with Kubernetes or GitHub Actions. If you've got any additional questions or feedback, please feel free to send me message or open an issue/PR._
+_This documentation is written for absolutely noobs and dummies like myself. I've tried to write it so that anyone can understand it and follow the steps, even without any previous experience with Kubernetes or GitHub Actions. If you've got any additional questions or feedback, please feel free to send me a message or open an issue/PR._
 
 _However, please keep in mind the target audience. Many of these steps can be done in a different way. Maybe some steps can be skipped. Or maybe some tools or services can be used in a different way or replaced with something else. But the goal is to just get it working. So remember that this is just a guide and not a strict set of instructions. Also the implementation might not be the best possible or most optimized way to do it._
 
@@ -36,7 +36,7 @@ Start by identifying and choosing the hardware to run on. I've run it on a separ
 
 I initialized a new VM on the Proxmox and installed [Ubuntu Server 24.04 LTS](https://ubuntu.com/download/server "Get Ubuntu Server | Download | Ubuntu") on it. For the runner VM, I gave it 4 cores and 8GB of RAM. When needed, I added more RAM with swap. Proxmox is a great way to run multiple virtual machines on a single physical machine. Of course, it is not a prerequisite, but it's a great way to run the runner set on a separate, completely isolated VM, in a dedicated environment reserved just for the ARC set.
 
-The runner set can be run on any machine, of course, but I recommend to run it on a separate, dedicated VM. This ensures that there are no conflicting installations, mismatching dependencies, Docker problems, or other environment issues.
+The runner set can be run on any machine, of course, but I recommend to run it on a separate, dedicated VM. This ensures that there are no conflicting installations, mismatching dependencies, Docker problems, problems with user permissions or group memberships, or other environment issues.
 
 Now I assume you've got the Ubuntu (or some Debian-based system) ready, whichever solution you've chosen.
 
@@ -67,7 +67,7 @@ Install the Go programming language. Read [Go documentation](https://go.dev/doc/
 
 On a headless system, files and folders can be fetched from the internet, for example, via `curl`. Here you want to use `curl -LO <url>`.
 
-As an post-install step for Go, you might need to add the Go binary to your `PATH`. Edit the `~/.bashrc` file and add the following lines:
+As a post-install step for Go, you might need to add the Go binary to your `PATH`. Edit the `~/.bashrc` file and add the following lines:
 
 ```bash
 export PATH=$PATH:/usr/local/go/bin
@@ -82,7 +82,7 @@ Install `kubectl`. Read the [Kubernetes documentation](https://kubernetes.io/doc
 
 Install `kind`. Make sure to install `kind` with `go install` method as instructed [here](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-with-go-install "kind - Quick Start").
 
-As the documentation states, the `go install` will most likely add the binary under `/home/user/go/bin`. You might need to add this to your `PATH` variable. Edit the `~/.bashrc` file and add the following lines:
+As the documentation states, the `go install` will most likely add the binary under `/home/<user>/go/bin`. You might need to add this to your `PATH` variable. Edit the `~/.bashrc` file and add the following lines:
 
 ```bash
 export PATH=$PATH:/home/<user>/go/bin
@@ -106,6 +106,12 @@ Create a new file called `values.yml` with `touch values.yml`. I've placed the f
 
 Open the file (for example, with `nano values.yml`) and add the content found in the [adjacent example file](./values.yml "values.yml").
 
+You are also free to fetch the `values.yml` file straight from the internet with
+
+```bash
+curl -LO https://raw.githubusercontent.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/master/values.yml
+```
+
 ### Configure The `values.yml` File
 
 Set the minimum and maximum number of runners to some reasonable values. Low-end machines might not be able to handle more than a couple of runners. The computational strain of a single runner largely depends on the workflows you run on it.
@@ -114,11 +120,13 @@ If you want, you can set maximum hardware resource limits for the runners, along
 
 Please note that DinD mode will override some of the configurations. In general, do not tamper with the configuration if you are not sure what you are doing.
 
-Update the `runnerImage` (present in two different places). If you are using a custom runner image, update the image name and tag. If you are using the default runner image, you can comment it out.
+If you are using a custom runner image, update the `runnerImage` (present in two different places). Give the image name and tag.
+
+If you are using the default runner image, you can comment those lines out.
 
 ### Custom Runner Images
 
-With "Runner Images" I mean the images that are used to run the workflows. For the GitHub-hosted runners, the default image is `ubuntu-latest`. For the self-hosted runners, the default image is `actions/runner:latest`. The self-hosted image is a bit more limited than the GitHub-hosted one and most likely not sufficient for your needs.
+With "Runner Images" I mean the images that are used to run the workflows. For the GitHub-hosted runners, the default image is `ubuntu-latest`. For the self-hosted runners, the default image is `actions/runner:latest`. The self-hosted image is a bit more limited than the GitHub-hosted one and most likely **not** sufficient for your needs.
 
 To run your workflows on a custom runner image, you need to first create the custom image. The default documentation about this topic by GitHub can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs").
 
@@ -128,7 +136,7 @@ I created a custom image called `custom-arc-runner`. The source Dockerfile used 
 
 **Please note** that it supports multi-platform (amd64 and arm64) builds only after version `v5`. Versions 1 to 4 only support `linux/arm64` builds.
 
-The official starter Dockerfile for a custom runner image can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs"). It's wise to preinstall the tools you need in your workflows into the custom runner image.
+The official starter Dockerfile for a custom runner image provided by GitHub can be found [here](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller#creating-your-own-runner-image "About Actions Runner Controller - GitHub Docs"). It's wise to preinstall the tools you need in your workflows into the custom runner image.
 
 Build and push the image to Docker Hub. I've written more about this step in the [image/README.md](./image/README.md "image/README.md") file. Perform this step before continuing with the rest of the documentation.
 
@@ -165,12 +173,9 @@ From your GitHub account, go to _Settings_ -> _Developer settings_ -> _Personal 
 
 Add the following scopes:
 
-- `admin:gpg_key`
 - `read:packages`
 - `repo`
 - `workflow`
-
-Not sure if all of these are needed, but I've added them all just to be safe.
 
 Copy the PAT and save it somewhere safe. You will need it later.
 
@@ -236,6 +241,8 @@ No pods should be restarting. However, it might take a while for the runners to 
 
 One common problem can be that you have named the runner set with a conflicting name. One repository can not have multiple runner sets with the same name.
 
+If a pod is restarting, it's most likely erroring out. Check the logs for the pod as described in the [next section](#13-logs--troubleshooting).
+
 Later on, when you've got actual workflows running, you can check the status of the workflow runner pods by running the following command:
 
 ```bash
@@ -296,7 +303,7 @@ More documentation about `kubectl logs` can be found [here](https://kubernetes.i
 
 ## XX Nuclear Bomb
 
-If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything Kubernetes-related from all namespaces. Please be careful with this command as you will lose everything on your machine.
+If everything went wrong, you can always delete the runner set and start over. This following command will permanently delete everything Kubernetes-related from all namespaces. **Please be careful with this command as you will lose everything Kubernetes-related on your machine**.
 
 ```bash
 helm ls -a --all-namespaces | awk 'NR > 1 { print  "-n "$2, $1}' | xargs -L1 helm delete &&

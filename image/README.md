@@ -16,9 +16,7 @@ The image has been built and configured to run in the DinD mode. If you need a n
 
 Heavily inspired by [this great blog post](https://some-natalie.dev/blog/kubernoodles-pt-5/ "Creating custom images for actions-runner-controller | Some Natalie's corner of the internet") by [@some-natalie](https://github.com/some-natalie "some-natalie (Natalie Somersall)").
 
-The runners are built on the base image of Ubuntu 24.04. The first tag of the image, `v1`, was built on Ubuntu 22.04. If you need to use the image on Ubuntu 22.04, use the `v1` tag. If you wish to customize your own image based on the `v1` version, please check the old Dockerfile from [this release](https://github.com/joonarafael/gh-arc-dind-kubernetes-for-dummies/releases/tag/v1 "Release v1: 2025-09-06: Init · joonarafael/gh-arc-dind-kubernetes-for-dummies").
-
-On top of the required software to run the ARC runner set, the image also includes _Caddy_ and _Nginx_, as well as _Node.js_, _Yarn_, _Golang_, _GitHub CLI_, _Docker Compose_, _Python_, and _AWS CLI_.
+The runners are built on the base image of Ubuntu 24.04. On top of the required software to run the ARC runner set, the image also includes _Caddy_ and _Nginx_, as well as _Node.js_, _Yarn_, _Golang_, _GitHub CLI_, _Docker Compose_, _Python_, and _AWS CLI_.
 
 ## Customizing The Image
 
@@ -44,7 +42,7 @@ Make sure to update the following versions in the Dockerfile:
 
 Any required environment variables can be imported with the `images/.env` file into the Dockerfile.
 
-**NOTE**! If you fork this repository, make sure to ignore the `.env` file not to ever commit any secrets to version control.
+**NOTE**! Do not use the `.env` file for actual secrets.
 
 ### Runner-specific stuff
 
@@ -78,6 +76,6 @@ docker buildx build \
 
 **3. Push the image**
 
-After a successful build, execute `docker push <your-username>/<your-image-name>:<tag>` to push the image to Docker Hub.
+After a successful build, execute `docker push <your-username>/<your-image-name>:<tag>` to push the image to Docker Hub. The `docker buildx build` command will automatically push the image to Docker Hub with the `--push` flag.
 
 Make sure the image and tag are correct. You can always check all your images and tags with `docker images`.
