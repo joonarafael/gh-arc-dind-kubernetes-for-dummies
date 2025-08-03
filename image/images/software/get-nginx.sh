@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+# Script to install Nginx
+
 apt-get update -y
 apt-get install -y curl gnupg2 ca-certificates lsb-release
 

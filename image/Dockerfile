@@ -173,6 +173,11 @@ RUN ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) \
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# Final permission fix for runner user directories
+RUN chown -R runner:runner /home/runner \
+  && chmod -R 755 /home/runner/.yarn 2>/dev/null || true \
+  && chmod -R 755 /home/runner/.cache 2>/dev/null || true
+
 FROM scratch AS final
 
 # Labels

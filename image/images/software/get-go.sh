@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Script to install Golang
+
 # Check if version argument is provided
 if [ -z "$1" ]; then
   echo "Error: Go version not provided"

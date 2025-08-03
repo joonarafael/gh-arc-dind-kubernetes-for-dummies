@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Script to install Node.js and Yarn Berry
+
 # Get Node.js version from argument or use default
 NODE_VERSION=${1:-22}
 
@@ -14,8 +16,20 @@ apt-get install nodejs -y --no-install-recommends
 # Install Yarn globally
 npm install --global yarn
 
-# Enable Yarn 4.9.2
-yarn set version 4.9.2
+# Set up Yarn for the runner user properly
+# Create runner home directory if it doesn't exist
+mkdir -p /home/runner
+
+# Enable Yarn 4.9.2 globally (system-wide installation)
+yarn set version 4.9.2 --install-mode update-lockfile
+
+# Ensure runner user owns their home directory and has proper permissions
+chown -R runner:runner /home/runner || true
+
+# Set up Yarn cache directory with proper permissions
+mkdir -p /home/runner/.yarn
+chown -R runner:runner /home/runner/.yarn || true
+chmod -R 755 /home/runner/.yarn || true
 
 # Verify installations
 echo "Node.js version: $(node -v)"
