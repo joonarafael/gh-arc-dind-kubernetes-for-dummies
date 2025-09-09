@@ -1,6 +1,6 @@
 # Self-Hosted GitHub Actions Runner Controller for Kubernetes
 
-Updated 2025-08-03.
+Updated 2025-09-09.
 
 **Self-hosted runners for GitHub Actions**. Run all your workflows on your own infrastructure.
 

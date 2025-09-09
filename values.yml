@@ -10,7 +10,7 @@ template:
   spec:
     initContainers:
       - name: init-dind-externals
-        image: docker.io/poser/custom-arc-runner:v1
+        image: docker.io/poser/custom-arc-runner:v2
         imagePullPolicy: IfNotPresent
         command:
           ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
@@ -19,16 +19,18 @@ template:
             mountPath: /home/runner/tmpDir
     containers:
       - name: runner
-        image: docker.io/poser/custom-arc-runner:v1
+        image: docker.io/poser/custom-arc-runner:v2
         imagePullPolicy: IfNotPresent
         command: ["/home/runner/run.sh"]
         env:
           - name: DOCKER_HOST
             value: tcp://localhost:2376
-          - name: DOCKER_TLS_VERIFY
-            value: "1"
-          - name: DOCKER_CERT_PATH
-            value: /certs/client
+          # ENABLE THIS IF YOU WANT TO USE DOCKER TLS
+          # KEEPING THESE OFF IS A POTENTIAL SECURITY RISK
+          # - name: DOCKER_TLS_VERIFY
+          #   value: "1"
+          # - name: DOCKER_CERT_PATH
+          #   value: /certs/client
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
